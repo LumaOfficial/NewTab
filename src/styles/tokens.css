@@ -1,0 +1,121 @@
+/*
+ * Luma design tokens.
+ *
+ * The whole UI reads from these variables, so a future advanced-theme feature
+ * can swap palettes without touching component styles. `data-theme` is set on
+ * <html> by the dashboard provider; the media query is the pre-hydration
+ * fallback so the first paint already matches the OS preference.
+ */
+
+:root {
+  color-scheme: light;
+
+  --font-ui: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Iowan Old Style', 'Charter', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman', serif;
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  --bg: #f3efe7;
+  --glow-a: rgba(236, 178, 104, 0.4);
+  --glow-b: rgba(126, 150, 180, 0.22);
+  --glow-c: rgba(214, 140, 120, 0.16);
+
+  --surface: rgba(255, 252, 247, 0.78);
+  --surface-solid: #fffdf9;
+  --surface-muted: rgba(255, 252, 247, 0.55);
+  --hover: rgba(35, 31, 26, 0.055);
+
+  --border: rgba(43, 36, 28, 0.1);
+  --border-strong: rgba(43, 36, 28, 0.18);
+
+  --ink: #231f1a;
+  --ink-2: #5f574c;
+  --ink-3: #837a6d;
+
+  --accent: #b45a26;
+  --accent-strong: #8f461c;
+  --accent-soft: rgba(180, 90, 38, 0.12);
+  --accent-fill: #b45a26;
+  --accent-fill-ink: #fff8f0;
+
+  --danger: #a33a2c;
+  --danger-soft: rgba(163, 58, 44, 0.12);
+
+  --ring: 0 0 0 3px rgba(180, 90, 38, 0.22);
+  --shadow-sm: 0 1px 2px rgba(35, 31, 26, 0.04), 0 10px 28px -20px rgba(35, 31, 26, 0.45);
+  --shadow-md: 0 2px 4px rgba(35, 31, 26, 0.05), 0 24px 44px -28px rgba(35, 31, 26, 0.5);
+  --shadow-pop: 0 18px 40px -18px rgba(24, 20, 16, 0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #0e1114;
+    --glow-a: rgba(198, 120, 58, 0.26);
+    --glow-b: rgba(84, 110, 150, 0.2);
+    --glow-c: rgba(150, 84, 70, 0.16);
+
+    --surface: rgba(26, 30, 35, 0.72);
+    --surface-solid: #171b20;
+    --surface-muted: rgba(24, 28, 33, 0.55);
+    --hover: rgba(255, 255, 255, 0.07);
+
+    --border: rgba(255, 255, 255, 0.09);
+    --border-strong: rgba(255, 255, 255, 0.18);
+
+    --ink: #f2eee6;
+    --ink-2: #b8b1a5;
+    --ink-3: #8f887c;
+
+    --accent: #e9a86a;
+    --accent-strong: #f3c493;
+    --accent-soft: rgba(233, 168, 106, 0.14);
+    --accent-fill: #e9a86a;
+    --accent-fill-ink: #201409;
+
+    --danger: #e79082;
+    --danger-soft: rgba(224, 139, 125, 0.14);
+
+    --ring: 0 0 0 3px rgba(233, 168, 106, 0.28);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 30px -20px rgba(0, 0, 0, 0.8);
+    --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.35), 0 26px 48px -28px rgba(0, 0, 0, 0.9);
+    --shadow-pop: 0 20px 44px -18px rgba(0, 0, 0, 0.7);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0e1114;
+  --glow-a: rgba(198, 120, 58, 0.26);
+  --glow-b: rgba(84, 110, 150, 0.2);
+  --glow-c: rgba(150, 84, 70, 0.16);
+
+  --surface: rgba(26, 30, 35, 0.72);
+  --surface-solid: #171b20;
+  --surface-muted: rgba(24, 28, 33, 0.55);
+  --hover: rgba(255, 255, 255, 0.07);
+
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.18);
+
+  --ink: #f2eee6;
+  --ink-2: #b8b1a5;
+  --ink-3: #8f887c;
+
+  --accent: #e9a86a;
+  --accent-strong: #f3c493;
+  --accent-soft: rgba(233, 168, 106, 0.14);
+  --accent-fill: #e9a86a;
+  --accent-fill-ink: #201409;
+
+  --danger: #e79082;
+  --danger-soft: rgba(224, 139, 125, 0.14);
+
+  --ring: 0 0 0 3px rgba(233, 168, 106, 0.28);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 30px -20px rgba(0, 0, 0, 0.8);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.35), 0 26px 48px -28px rgba(0, 0, 0, 0.9);
+  --shadow-pop: 0 20px 44px -18px rgba(0, 0, 0, 0.7);
+}
