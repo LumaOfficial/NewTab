@@ -1,11 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { cx } from '../../lib/utils';
 import { Dialog } from '../ui/Dialog';
 import { Badge } from '../ui/Badge';
 import { CloudIcon, PlugIcon, ShieldIcon } from '../icons';
 import { SETTINGS_SECTIONS, type SettingsSectionId } from './sections';
 import { AppearanceSection } from './sections/AppearanceSection';
+import { ThemesSection } from './sections/ThemesSection';
+import { LayoutsSection } from './sections/LayoutsSection';
 import { WidgetsSection } from './sections/WidgetsSection';
+import { WorkspacesSection } from './sections/WorkspacesSection';
+import { AccessibilitySection } from './sections/AccessibilitySection';
+import { OnboardingSection } from './sections/OnboardingSection';
 import { ShortcutsSection } from './sections/ShortcutsSection';
 import { DataSection } from './sections/DataSection';
 import { AboutSection } from './sections/AboutSection';
@@ -18,8 +23,18 @@ function renderSection(id: SettingsSectionId, onOpenAccount: (view: AccountView)
   switch (id) {
     case 'appearance':
       return <AppearanceSection />;
+    case 'themes':
+      return <ThemesSection />;
+    case 'layouts':
+      return <LayoutsSection />;
     case 'widgets':
       return <WidgetsSection />;
+    case 'workspaces':
+      return <WorkspacesSection />;
+    case 'accessibility':
+      return <AccessibilitySection />;
+    case 'onboarding':
+      return <OnboardingSection />;
     case 'shortcuts':
       return <ShortcutsSection />;
     case 'data':
@@ -67,6 +82,7 @@ export interface SettingsPanelProps {
   open: boolean;
   onClose: () => void;
   onOpenAccount: (view: AccountView) => void;
+  initialSection?: SettingsSectionId;
 }
 
 /**
@@ -74,8 +90,18 @@ export interface SettingsPanelProps {
  * turn a "soon" section into a real one by adding a component and dropping the
  * flag — the rest of the shell stays untouched.
  */
-export function SettingsPanel({ open, onClose, onOpenAccount }: SettingsPanelProps) {
-  const [active, setActive] = useState<SettingsSectionId>('appearance');
+export function SettingsPanel({ open, onClose, onOpenAccount, initialSection }: SettingsPanelProps) {
+  const [active, setActive] = useState<SettingsSectionId>(initialSection ?? 'appearance');
+  const navRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (open) setActive(initialSection ?? 'appearance');
+  }, [open, initialSection]);
+
+  useEffect(() => {
+    const current = navRef.current?.querySelector<HTMLElement>('[aria-current="true"]');
+    current?.scrollIntoView({ block: 'nearest', inline: 'center' });
+  }, [active]);
 
   return (
     <Dialog
@@ -86,7 +112,7 @@ export function SettingsPanel({ open, onClose, onOpenAccount }: SettingsPanelPro
       onClose={onClose}
     >
       <div className="settings">
-        <nav className="settings__nav" aria-label="Settings sections">
+        <nav className="settings__nav" aria-label="Settings sections" ref={navRef}>
           {SETTINGS_SECTIONS.map((section) => (
             <button
               key={section.id}

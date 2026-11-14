@@ -68,7 +68,13 @@ function NoteForm({ formId, note, onSaved }: NoteFormProps) {
     } else {
       dispatch({
         type: 'note/add',
-        note: { id: createId('note'), title: trimmedTitle, body, updatedAt: Date.now() },
+        note: {
+          id: createId('note'),
+          title: trimmedTitle,
+          body,
+          updatedAt: Date.now(),
+          pinned: false,
+        },
       });
     }
 

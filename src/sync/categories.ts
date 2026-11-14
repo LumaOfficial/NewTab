@@ -12,7 +12,7 @@ import {
   type SearchEngineId,
   type ThemePreference,
 } from '../storage/schema';
-import { WIDGET_IDS } from '../widgets/widgets';
+import { WIDGET_IDS } from '../widgets/catalogue';
 
 export const SYNC_CATEGORIES = [
   {
@@ -66,6 +66,7 @@ export function sliceCategory(data: DashboardData, id: SyncCategoryId): unknown 
       return {
         widgetOrder: data.settings.widgetOrder,
         hiddenWidgets: data.settings.hiddenWidgets,
+        layout: data.settings.layout,
       };
     case 'shortcuts':
       return data.shortcuts;
@@ -112,6 +113,7 @@ export function applyCategory(
           ...data.settings,
           widgetOrder: incoming.widgetOrder ?? data.settings.widgetOrder,
           hiddenWidgets: incoming.hiddenWidgets ?? data.settings.hiddenWidgets,
+          layout: incoming.layout ?? data.settings.layout,
         },
       });
     case 'shortcuts':

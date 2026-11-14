@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useDashboard } from '../state/DashboardProvider';
 import { formatRelativeTime } from '../lib/format';
-import { NoteIcon, PencilIcon, PlusIcon, TrashIcon } from '../components/icons';
+import { NoteIcon, PencilIcon, PinIcon, PlusIcon, TrashIcon } from '../components/icons';
 import { Button } from '../components/ui/Button';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -50,15 +50,24 @@ export function NotesWidget() {
       ) : (
         <ul className="note-list">
           {notes.map((note) => (
-            <li key={note.id} className="note-row">
+            <li key={note.id} className={`note-row${note.pinned ? ' note-row--pinned' : ''}`}>
               <button type="button" className="note" onClick={() => openEditor(note)}>
-                <span className="note__title">{note.title || 'Untitled note'}</span>
+                <span className="note__title">
+                  {note.pinned ? <PinIcon size={12} /> : null}
+                  {note.title || 'Untitled note'}
+                </span>
                 {note.body.trim() ? <span className="note__excerpt">{note.body}</span> : null}
                 <span className="note__meta">{formatRelativeTime(note.updatedAt)}</span>
               </button>
               <Menu
                 label={`Options for ${note.title || 'untitled note'}`}
                 items={[
+                  {
+                    id: 'pin',
+                    label: note.pinned ? 'Unpin note' : 'Pin note',
+                    icon: <PinIcon size={15} />,
+                    onSelect: () => dispatch({ type: 'note/pin', id: note.id, pinned: !note.pinned }),
+                  },
                   {
                     id: 'edit',
                     label: 'Edit note',

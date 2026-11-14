@@ -13,6 +13,8 @@ export function TasksWidget() {
   const [draft, setDraft] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
+  const [editingDue, setEditingDue] = useState('');
+  const [dueDraft, setDueDraft] = useState('');
 
   const openCount = data.tasks.filter((task) => !task.done).length;
   const doneCount = data.tasks.length - openCount;
@@ -24,14 +26,23 @@ export function TasksWidget() {
 
     dispatch({
       type: 'task/add',
-      task: { id: createId('task'), text, done: false, createdAt: Date.now() },
+      task: {
+        id: createId('task'),
+        text,
+        done: false,
+        createdAt: Date.now(),
+        dueAt: dueDraft || null,
+        completedAt: null,
+      },
     });
     setDraft('');
+    setDueDraft('');
   };
 
-  const startEditing = (id: string, text: string) => {
+  const startEditing = (id: string, text: string, dueAt: string | null) => {
     setEditingId(id);
     setEditingText(text);
+    setEditingDue(dueAt ?? '');
   };
 
   const commitEditing = () => {
@@ -40,6 +51,7 @@ export function TasksWidget() {
 
     if (text) {
       dispatch({ type: 'task/update', id: editingId, text });
+      dispatch({ type: 'task/due', id: editingId, dueAt: editingDue || null });
     } else {
       // Empty edit means the user cleared it — treat that as removing the task.
       dispatch({ type: 'task/delete', id: editingId });
@@ -47,6 +59,7 @@ export function TasksWidget() {
 
     setEditingId(null);
     setEditingText('');
+    setEditingDue('');
   };
 
   return (
@@ -62,6 +75,13 @@ export function TasksWidget() {
           placeholder="Add a task…"
           autoComplete="off"
           onChange={(event) => setDraft(event.target.value)}
+        />
+        <Input
+          className="task-date-input"
+          type="date"
+          value={dueDraft}
+          aria-label="Due date for the new task"
+          onChange={(event) => setDueDraft(event.target.value)}
         />
         <Button type="submit" variant="secondary" size="sm" icon={<PlusIcon size={15} />} disabled={!draft.trim()}>
           Add
@@ -106,6 +126,13 @@ export function TasksWidget() {
                       }
                     }}
                   />
+                  <Input
+                    className="task-date-input"
+                    type="date"
+                    value={editingDue}
+                    aria-label="Due date"
+                    onChange={(event) => setEditingDue(event.target.value)}
+                  />
                   <Button size="sm" variant="secondary" onClick={commitEditing}>
                     Save
                   </Button>
@@ -122,7 +149,7 @@ export function TasksWidget() {
               <div className="task__actions">
                 <IconButton
                   label={`Edit “${task.text}”`}
-                  onClick={() => startEditing(task.id, task.text)}
+                  onClick={() => startEditing(task.id, task.text, task.dueAt)}
                 >
                   <PencilIcon size={15} />
                 </IconButton>

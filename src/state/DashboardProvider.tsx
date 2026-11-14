@@ -11,17 +11,24 @@ import {
 } from 'react';
 import { createStore, describeStorageError, type KeyValueStore, type StorageKind } from '../storage/browserStorage';
 import {
-  createDefaultDashboard,
-  sanitizeDashboard,
+  createDefaultRoot,
+  sanitizeRoot,
   STORAGE_KEY,
+  type CustomTheme,
   type DashboardData,
+  type DashboardRoot,
+  type OnboardingState,
+  type SavedLayout,
+  type Workspace,
 } from '../storage/schema';
-import { dashboardReducer, type DashboardAction } from './dashboardReducer';
+import { activeDataOf, activeWorkspaceOf, dashboardReducer, type DashboardAction } from './dashboardReducer';
 
 export type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
 interface DashboardContextValue {
+  /** The active workspace's dashboard data (settings, notes, tasks…). */
   data: DashboardData;
+  root: DashboardRoot;
   dispatch: Dispatch<DashboardAction>;
   /** `loading` until the first read from storage settles. */
   status: 'loading' | 'ready';
@@ -30,6 +37,12 @@ interface DashboardContextValue {
   /** Human-readable reason the last read/write failed, if any. */
   storageError: string | null;
   resetDashboard: () => void;
+  workspace: Workspace;
+  workspaces: Workspace[];
+  activeWorkspaceId: string;
+  customThemes: CustomTheme[];
+  savedLayouts: SavedLayout[];
+  onboarding: OnboardingState;
 }
 
 const DashboardContext = createContext<DashboardContextValue | null>(null);
@@ -41,12 +54,13 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   if (storeRef.current === null) storeRef.current = createStore();
   const store = storeRef.current;
 
-  const [data, dispatch] = useReducer(dashboardReducer, undefined, createDefaultDashboard);
+  const [root, dispatch] = useReducer(dashboardReducer, undefined, createDefaultRoot);
   const [status, setStatus] = useState<'loading' | 'ready'>('loading');
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [storageError, setStorageError] = useState<string | null>(null);
 
-  // Load once on mount.
+  // Load once on mount. Older single-dashboard records are wrapped into a
+  // workspace by sanitizeRoot, so an existing install never loses data.
   useEffect(() => {
     let cancelled = false;
 
@@ -54,7 +68,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       try {
         const stored = await store.get(STORAGE_KEY);
         if (!cancelled && stored != null) {
-          dispatch({ type: 'dashboard/hydrate', data: sanitizeDashboard(stored) });
+          dispatch({ type: 'dashboard/hydrate-root', root: sanitizeRoot(stored) });
         }
         if (!cancelled && store.kind === 'unavailable') {
           setStorageError(
@@ -82,7 +96,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     const timer = window.setTimeout(() => {
       void (async () => {
         try {
-          await store.set(STORAGE_KEY, data);
+          await store.set(STORAGE_KEY, root);
           setSaveState('saved');
           setStorageError(null);
         } catch (error) {
@@ -93,19 +107,29 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     }, SAVE_DEBOUNCE_MS);
 
     return () => window.clearTimeout(timer);
-  }, [data, status, store]);
+  }, [root, status, store]);
+
+  const data = activeDataOf(root);
+  const workspace = activeWorkspaceOf(root);
 
   const value = useMemo<DashboardContextValue>(
     () => ({
       data,
+      root,
       dispatch,
       status,
       saveState,
       storageKind: store.kind,
       storageError,
       resetDashboard: () => dispatch({ type: 'dashboard/reset' }),
+      workspace,
+      workspaces: root.workspaces,
+      activeWorkspaceId: root.activeWorkspaceId,
+      customThemes: root.customThemes,
+      savedLayouts: root.savedLayouts,
+      onboarding: root.onboarding,
     }),
-    [data, status, saveState, store.kind, storageError],
+    [data, root, status, saveState, store.kind, storageError, workspace],
   );
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;

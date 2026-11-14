@@ -3,16 +3,20 @@ import { Badge } from '../../ui/Badge';
 import { LumaMark } from '../../LumaMark';
 
 const INCLUDED = [
-  'New-tab dashboard with clock, greeting, search, shortcuts, notes and tasks',
-  'Light, dark and system themes',
-  'Widget visibility and ordering',
-  'Local storage that survives closing the browser',
+  'Onboarding wizard, eight preset layouts and a drag-and-resize custom grid',
+  'Multiple workspaces, each with its own theme, layout, widgets and content',
+  'Seven theme families with backgrounds, typography, surface and motion controls',
+  'A widget library of 57 widgets across eight categories',
+  'Search with local suggestions, commands, calculations and unit conversion',
+  'Accessibility controls, reduced motion, large text and remappable shortcuts',
+  'Optional account, versioned sync, integration states and privacy controls',
+  'Local storage that survives closing the browser, offline',
 ];
 
 const NOT_INCLUDED = [
-  'Accounts, cloud sync and collaboration',
-  'AI features and third-party integrations',
-  'Advanced themes and workspaces',
+  'Real collaboration or shared workspaces',
+  'AI answers and generated plans',
+  'Integrations whose credentials this build does not have',
 ];
 
 export function AboutSection() {
@@ -34,9 +38,9 @@ export function AboutSection() {
           </div>
         </div>
         <p>
-          Luma replaces your browser’s new tab with a focused dashboard. This first release
-          establishes the design system, widget framework and local storage foundation that
-          later updates build on.
+          Luma replaces your browser’s new tab with a focused dashboard. The dashboard, workspaces, themes and widget library are
+          built on the same local-first foundation, with account sync and integration states
+          layered on top.
         </p>
         <div className="settings__title-row">
           <Badge>{isExtensionContext() ? 'Running as extension' : 'Running as web preview'}</Badge>

@@ -7,13 +7,19 @@ import { ConfirmDialog } from '../../ui/ConfirmDialog';
 import { ResetIcon } from '../../icons';
 
 export function DataSection() {
-  const { data, storageKind, resetDashboard } = useDashboard();
+  const { data, storageKind, resetDashboard, workspaces, workspace } = useDashboard();
+  const visibleWidgets = data.settings.layout.entries.filter(
+    (entry) => !data.settings.hiddenWidgets.includes(entry.id),
+  ).length;
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const counts = [
+    { label: 'Workspaces', value: workspaces.length },
+    { label: `Widgets in ${workspace.name}`, value: visibleWidgets },
     { label: 'Shortcuts', value: data.shortcuts.length },
     { label: 'Notes', value: data.notes.length },
     { label: 'Tasks', value: data.tasks.length },
+    { label: 'Calendar events', value: data.events.length },
   ];
 
   return (
@@ -47,10 +53,11 @@ export function DataSection() {
       </div>
 
       <div className="settings__group">
-        <p className="settings__group-title">Reset dashboard</p>
+        <p className="settings__group-title">Reset this workspace</p>
         <p className="reset-note">
-          Restores the default theme, widget layout and search settings, and removes every
-          shortcut, note and task. You’ll be asked to confirm.
+          Restores “{workspace.name}” to the default theme, complete layout and search settings,
+          and removes its shortcuts, notes, tasks and events. Other workspaces are untouched.
+          You’ll be asked to confirm.
         </p>
         <div>
           <Button
@@ -65,9 +72,9 @@ export function DataSection() {
 
       <ConfirmDialog
         open={confirmOpen}
-        title="Reset dashboard to defaults?"
-        description="Your theme, widget layout, shortcuts, notes and tasks will all be cleared."
-        confirmLabel="Reset everything"
+        title="Reset this workspace to defaults?"
+        description="This workspace’s theme, layout, shortcuts, notes, tasks and events will be cleared. Other workspaces stay as they are."
+        confirmLabel="Reset workspace"
         onConfirm={resetDashboard}
         onClose={() => setConfirmOpen(false)}
       />
