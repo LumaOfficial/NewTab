@@ -8,6 +8,8 @@ export interface ConfirmDialogProps {
   confirmLabel: string;
   cancelLabel?: string;
   tone?: 'danger' | 'primary';
+  /** Extra line under the description; defaults to the irreversible warning. */
+  note?: string;
   onConfirm: () => void;
   onClose: () => void;
 }
@@ -20,6 +22,7 @@ export function ConfirmDialog({
   confirmLabel,
   cancelLabel = 'Cancel',
   tone = 'danger',
+  note = 'This action can’t be undone.',
   onConfirm,
   onClose,
 }: ConfirmDialogProps) {
@@ -47,7 +50,7 @@ export function ConfirmDialog({
         </>
       }
     >
-      <p className="reset-note">This action can’t be undone.</p>
+      <p className="reset-note">{note}</p>
     </Dialog>
   );
 }

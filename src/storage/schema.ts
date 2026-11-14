@@ -37,12 +37,28 @@ export interface Task {
   createdAt: number;
 }
 
+export type TrashKind = 'note' | 'task' | 'shortcut';
+
+/**
+ * Deleted notes, tasks and shortcuts land here first, so an accidental delete
+ * can be undone without a sync round trip.
+ */
+export interface TrashEntry {
+  id: string;
+  kind: TrashKind;
+  itemId: string;
+  label: string;
+  deletedAt: number;
+  item: Note | Task | Shortcut;
+}
+
 /** The whole dashboard state, persisted as a single versioned record. */
 export interface DashboardData {
   settings: DashboardSettings;
   shortcuts: Shortcut[];
   notes: Note[];
   tasks: Task[];
+  trash: TrashEntry[];
 }
 
 export const STORAGE_KEY = 'luma.dashboard.v1';
@@ -70,8 +86,11 @@ export function createDefaultDashboard(): DashboardData {
     shortcuts: [],
     notes: [],
     tasks: [],
+    trash: [],
   };
 }
+
+export const TRASH_LIMIT = 50;
 
 /* ------------------------------------------------------------------------- *
  * Loading / validation
@@ -209,6 +228,62 @@ export function sanitizeSettings(value: unknown): DashboardSettings {
   };
 }
 
+function readTrash(value: unknown): TrashEntry[] {
+  if (!Array.isArray(value)) return [];
+
+  const entries: TrashEntry[] = [];
+
+  for (const entry of value) {
+    if (!isRecord(entry)) continue;
+    const kind = entry.kind;
+    if (kind !== 'note' && kind !== 'task' && kind !== 'shortcut') continue;
+    if (!isRecord(entry.item)) continue;
+
+    const item = entry.item;
+    const itemId = readString(item.id);
+    if (!itemId) continue;
+
+    const normalizedItem: Note | Task | Shortcut =
+      kind === 'note'
+        ? {
+            id: itemId,
+            title: readString(item.title),
+            body: readString(item.body),
+            updatedAt: readTimestamp(item.updatedAt),
+          }
+        : kind === 'task'
+          ? {
+              id: itemId,
+              text: readString(item.text),
+              done: readBoolean(item.done, false),
+              createdAt: readTimestamp(item.createdAt),
+            }
+          : {
+              id: itemId,
+              title: readString(item.title),
+              url: readString(item.url),
+            };
+
+    const label =
+      readString(entry.label).trim() ||
+      (kind === 'task'
+        ? (normalizedItem as Task).text
+        : (normalizedItem as Note | Shortcut).title) ||
+      'Untitled';
+
+    entries.push({
+      id: readString(entry.id) || createId('trash'),
+      kind,
+      itemId,
+      label,
+      deletedAt: readTimestamp(entry.deletedAt),
+      item: normalizedItem,
+    });
+  }
+
+  return entries.slice(0, TRASH_LIMIT);
+}
+
 export function sanitizeDashboard(value: unknown): DashboardData {
   if (!isRecord(value)) return createDefaultDashboard();
 
@@ -217,5 +292,6 @@ export function sanitizeDashboard(value: unknown): DashboardData {
     shortcuts: readShortcuts(value.shortcuts),
     notes: readNotes(value.notes),
     tasks: readTasks(value.tasks),
+    trash: readTrash(value.trash),
   };
 }

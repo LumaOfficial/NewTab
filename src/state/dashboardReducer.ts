@@ -1,5 +1,14 @@
-import type { DashboardData, DashboardSettings, Note, Shortcut, Task } from '../storage/schema';
-import { createDefaultDashboard } from '../storage/schema';
+import type {
+  DashboardData,
+  DashboardSettings,
+  Note,
+  Shortcut,
+  Task,
+  TrashEntry,
+  TrashKind,
+} from '../storage/schema';
+import { createDefaultDashboard, TRASH_LIMIT } from '../storage/schema';
+import { createId } from '../lib/utils';
 import type { WidgetId } from '../widgets/widgets';
 
 export type DashboardAction =
@@ -19,7 +28,10 @@ export type DashboardAction =
   | { type: 'task/toggle'; id: string }
   | { type: 'task/update'; id: string; text: string }
   | { type: 'task/delete'; id: string }
-  | { type: 'task/clearCompleted' };
+  | { type: 'task/clearCompleted' }
+  | { type: 'trash/restore'; id: string }
+  | { type: 'trash/purge'; id: string }
+  | { type: 'trash/empty' };
 
 /** Moves one item within a list, returning a new list. */
 function moveById<T extends { id: string }>(items: T[], id: string, direction: -1 | 1): T[] {
@@ -33,6 +45,27 @@ function moveById<T extends { id: string }>(items: T[], id: string, direction: -
   const [moved] = next.splice(index, 1);
   next.splice(target, 0, moved);
   return next;
+}
+
+/** Moves an item into the trash, replacing any older copy of the same item. */
+function pushTrash(
+  trash: TrashEntry[],
+  kind: TrashKind,
+  itemId: string,
+  label: string,
+  item: TrashEntry['item'],
+): TrashEntry[] {
+  const entry: TrashEntry = {
+    id: createId('trash'),
+    kind,
+    itemId,
+    label: label.trim() || 'Untitled',
+    deletedAt: Date.now(),
+    item,
+  };
+
+  return [entry, ...trash.filter((existing) => !(existing.kind === kind && existing.itemId === itemId))]
+    .slice(0, TRASH_LIMIT);
 }
 
 function moveWidget(order: WidgetId[], id: WidgetId, direction: -1 | 1): WidgetId[] {
@@ -95,11 +128,16 @@ export function dashboardReducer(state: DashboardData, action: DashboardAction):
         ),
       };
 
-    case 'shortcut/delete':
+    case 'shortcut/delete': {
+      const shortcut = state.shortcuts.find((entry) => entry.id === action.id);
+      if (!shortcut) return state;
+
       return {
         ...state,
-        shortcuts: state.shortcuts.filter((shortcut) => shortcut.id !== action.id),
+        shortcuts: state.shortcuts.filter((entry) => entry.id !== action.id),
+        trash: pushTrash(state.trash, 'shortcut', shortcut.id, shortcut.title, shortcut),
       };
+    }
 
     case 'shortcut/move':
       return {
@@ -120,8 +158,16 @@ export function dashboardReducer(state: DashboardData, action: DashboardAction):
         ),
       };
 
-    case 'note/delete':
-      return { ...state, notes: state.notes.filter((note) => note.id !== action.id) };
+    case 'note/delete': {
+      const note = state.notes.find((entry) => entry.id === action.id);
+      if (!note) return state;
+
+      return {
+        ...state,
+        notes: state.notes.filter((entry) => entry.id !== action.id),
+        trash: pushTrash(state.trash, 'note', note.id, note.title || 'Untitled note', note),
+      };
+    }
 
     case 'task/add':
       return { ...state, tasks: [...state.tasks, action.task] };
@@ -142,11 +188,57 @@ export function dashboardReducer(state: DashboardData, action: DashboardAction):
         ),
       };
 
-    case 'task/delete':
-      return { ...state, tasks: state.tasks.filter((task) => task.id !== action.id) };
+    case 'task/delete': {
+      const task = state.tasks.find((entry) => entry.id === action.id);
+      if (!task) return state;
 
-    case 'task/clearCompleted':
-      return { ...state, tasks: state.tasks.filter((task) => !task.done) };
+      return {
+        ...state,
+        tasks: state.tasks.filter((entry) => entry.id !== action.id),
+        trash: pushTrash(state.trash, 'task', task.id, task.text, task),
+      };
+    }
+
+    case 'task/clearCompleted': {
+      const completed = state.tasks.filter((task) => task.done);
+      if (completed.length === 0) return state;
+
+      const trash = completed.reduce(
+        (list, task) => pushTrash(list, 'task', task.id, task.text, task),
+        state.trash,
+      );
+
+      return { ...state, tasks: state.tasks.filter((task) => !task.done), trash };
+    }
+
+    case 'trash/restore': {
+      const entry = state.trash.find((item) => item.id === action.id);
+      if (!entry) return state;
+
+      const trash = state.trash.filter((item) => item.id !== action.id);
+
+      if (entry.kind === 'note') {
+        const note = entry.item as Note;
+        if (state.notes.some((existing) => existing.id === note.id)) return { ...state, trash };
+        return { ...state, notes: [note, ...state.notes], trash };
+      }
+
+      if (entry.kind === 'task') {
+        const task = entry.item as Task;
+        if (state.tasks.some((existing) => existing.id === task.id)) return { ...state, trash };
+        return { ...state, tasks: [...state.tasks, task], trash };
+      }
+
+      const shortcut = entry.item as Shortcut;
+      if (state.shortcuts.some((existing) => existing.id === shortcut.id)) return { ...state, trash };
+      return { ...state, shortcuts: [...state.shortcuts, shortcut], trash };
+    }
+
+    case 'trash/purge':
+      return { ...state, trash: state.trash.filter((entry) => entry.id !== action.id) };
+
+    case 'trash/empty':
+      return { ...state, trash: [] };
 
     default:
       return state;

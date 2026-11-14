@@ -4,6 +4,7 @@ export type SettingsSectionId =
   | 'widgets'
   | 'shortcuts'
   | 'data'
+  | 'trash'
   | 'about'
   | 'accounts'
   | 'integrations'
@@ -24,11 +25,12 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
   { id: 'widgets', label: 'Dashboard widgets' },
   { id: 'shortcuts', label: 'Shortcuts' },
   { id: 'data', label: 'Data & storage' },
+  { id: 'trash', label: 'Recently deleted' },
   { id: 'about', label: 'About Luma New Tab' },
-  { id: 'accounts', label: 'Accounts & sync', soon: true },
-  { id: 'integrations', label: 'Integrations', soon: true },
+  { id: 'accounts', label: 'Account & sync' },
+  { id: 'integrations', label: 'Integrations' },
+  { id: 'privacy', label: 'Privacy & security' },
   { id: 'ai', label: 'AI features', soon: true },
   { id: 'workspaces', label: 'Workspaces', soon: true },
   { id: 'themes', label: 'Advanced themes', soon: true },
-  { id: 'privacy', label: 'Privacy & security', soon: true },
 ];

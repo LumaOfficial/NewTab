@@ -7,9 +7,13 @@ import { EmptyState } from '../ui/EmptyState';
 import { IconButton } from '../ui/IconButton';
 import { GearIcon, GridIcon } from '../icons';
 import { LumaMark } from '../LumaMark';
+import { AccountButton } from '../account/AccountButton';
+import { SyncStatusChip } from '../account/SyncStatusChip';
+import type { AccountView } from '../../account/views';
 
 export interface DashboardProps {
   openSettings: () => void;
+  openAccount: (view?: AccountView) => void;
 }
 
 function renderWidget(id: WidgetId, openSettings: () => void) {
@@ -21,7 +25,7 @@ function renderWidget(id: WidgetId, openSettings: () => void) {
  * The new-tab surface. Which widgets appear, and in what order, comes entirely
  * from saved settings — the layout itself never hard-codes a widget.
  */
-export function Dashboard({ openSettings }: DashboardProps) {
+export function Dashboard({ openSettings, openAccount }: DashboardProps) {
   const { data } = useDashboard();
   const hidden = new Set(data.settings.hiddenWidgets);
   const visible = data.settings.widgetOrder.filter((id) => !hidden.has(id));
@@ -38,9 +42,13 @@ export function Dashboard({ openSettings }: DashboardProps) {
             Luma <span>New Tab</span>
           </span>
         </div>
-        <IconButton label="Open settings" solid onClick={openSettings}>
-          <GearIcon size={18} />
-        </IconButton>
+        <div className="dashboard__actions">
+          <SyncStatusChip onOpen={() => openAccount('sync')} />
+          <AccountButton onClick={() => openAccount('overview')} />
+          <IconButton label="Open settings" solid onClick={openSettings}>
+            <GearIcon size={18} />
+          </IconButton>
+        </div>
       </header>
 
       {heroIds.length > 0 ? (

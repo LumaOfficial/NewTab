@@ -155,6 +155,15 @@ export function MonitorIcon(props: IconProps) {
   );
 }
 
+export function RestoreIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4.6 6.2v4.4h4.4" />
+      <path d="M5.7 10.5a7 7 0 1 1 .9 5.9" />
+    </Icon>
+  );
+}
+
 export function ResetIcon(props: IconProps) {
   return (
     <Icon {...props}>
@@ -236,6 +245,15 @@ export function ShieldIcon(props: IconProps) {
     <Icon {...props}>
       <path d="M12 3.6l7 2.6v5.6c0 4-2.9 7-7 8.6-4.1-1.6-7-4.6-7-8.6V6.2z" />
       <path d="M9.2 12.1l2 2 3.6-3.9" />
+    </Icon>
+  );
+}
+
+export function UserIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="8.6" r="3.6" />
+      <path d="M4.8 20.2a7.4 7.4 0 0 1 14.4 0" />
     </Icon>
   );
 }

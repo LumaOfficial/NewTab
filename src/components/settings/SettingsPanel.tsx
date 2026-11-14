@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { cx } from '../../lib/utils';
 import { Dialog } from '../ui/Dialog';
 import { Badge } from '../ui/Badge';
+import { CloudIcon, PlugIcon, ShieldIcon } from '../icons';
 import { SETTINGS_SECTIONS, type SettingsSectionId } from './sections';
 import { AppearanceSection } from './sections/AppearanceSection';
 import { WidgetsSection } from './sections/WidgetsSection';
@@ -9,8 +10,11 @@ import { ShortcutsSection } from './sections/ShortcutsSection';
 import { DataSection } from './sections/DataSection';
 import { AboutSection } from './sections/AboutSection';
 import { ComingSoonSection } from './sections/ComingSoonSection';
+import { AccountLinkSection } from './sections/AccountLinkSection';
+import { TrashSection } from '../account/TrashSection';
+import type { AccountView } from '../../account/views';
 
-function renderSection(id: SettingsSectionId) {
+function renderSection(id: SettingsSectionId, onOpenAccount: (view: AccountView) => void) {
   switch (id) {
     case 'appearance':
       return <AppearanceSection />;
@@ -20,8 +24,40 @@ function renderSection(id: SettingsSectionId) {
       return <ShortcutsSection />;
     case 'data':
       return <DataSection />;
+    case 'trash':
+      return <TrashSection />;
     case 'about':
       return <AboutSection />;
+    case 'accounts':
+      return (
+        <AccountLinkSection
+          title="Account & sync"
+          description="Sign in to keep themes, widgets, shortcuts, notes and tasks on every device. Your local dashboard keeps working offline either way."
+          actionLabel="Open account & sync"
+          icon={<CloudIcon size={16} />}
+          onOpen={() => onOpenAccount('overview')}
+        />
+      );
+    case 'integrations':
+      return (
+        <AccountLinkSection
+          title="Integrations"
+          description="Connect calendars, music, weather and more — one service at a time, each with its own permissions and its own disconnect button."
+          actionLabel="Manage integrations"
+          icon={<PlugIcon size={16} />}
+          onOpen={() => onOpenAccount('integrations')}
+        />
+      );
+    case 'privacy':
+      return (
+        <AccountLinkSection
+          title="Privacy & security"
+          description="See what stays on this device, what syncs, which services are connected, and how to export or delete your data."
+          actionLabel="Open privacy controls"
+          icon={<ShieldIcon size={16} />}
+          onOpen={() => onOpenAccount('privacy')}
+        />
+      );
     default:
       return <ComingSoonSection sectionId={id} />;
   }
@@ -30,6 +66,7 @@ function renderSection(id: SettingsSectionId) {
 export interface SettingsPanelProps {
   open: boolean;
   onClose: () => void;
+  onOpenAccount: (view: AccountView) => void;
 }
 
 /**
@@ -37,7 +74,7 @@ export interface SettingsPanelProps {
  * turn a "soon" section into a real one by adding a component and dropping the
  * flag — the rest of the shell stays untouched.
  */
-export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
+export function SettingsPanel({ open, onClose, onOpenAccount }: SettingsPanelProps) {
   const [active, setActive] = useState<SettingsSectionId>('appearance');
 
   return (
@@ -64,7 +101,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
           ))}
         </nav>
 
-        <div className="settings__content">{renderSection(active)}</div>
+        <div className="settings__content">{renderSection(active, onOpenAccount)}</div>
       </div>
     </Dialog>
   );
