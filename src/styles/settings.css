@@ -1,0 +1,335 @@
+/* Settings drawer: section navigation, rows, and info blocks. */
+
+.settings {
+  display: grid;
+  grid-template-columns: 214px minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+}
+
+.settings__nav {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  padding: var(--space-3) var(--space-3) var(--space-6);
+  border-right: 1px solid var(--line);
+  background: var(--surface-muted);
+  overflow-y: auto;
+}
+
+.settings__nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease);
+}
+
+.settings__nav-item:hover {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+
+.settings__nav-item[aria-current='true'] {
+  background: var(--surface-strong);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+
+.settings__nav-item--soon {
+  color: var(--ink-faint);
+}
+
+.settings__content {
+  padding: var(--space-6);
+  overflow-y: auto;
+}
+
+.settings__section {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 560px;
+}
+
+.settings__section-title {
+  font-size: 18px;
+  font-weight: 620;
+  letter-spacing: -0.015em;
+}
+
+.settings__title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.settings__section-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-xs);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.settings__section-intro {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--ink-faint);
+}
+
+.settings__group {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.settings__group-title {
+  font-size: 13px;
+  font-weight: 620;
+  color: var(--ink);
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.setting-row__text {
+  display: grid;
+  gap: 2px;
+}
+
+.setting-row__label {
+  font-size: 13.5px;
+  font-weight: 550;
+}
+
+.setting-row__hint {
+  font-size: 12.5px;
+  color: var(--ink-faint);
+}
+
+/* Widget management rows ------------------------------------------------- */
+.widget-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-strong);
+}
+
+.widget-row__text {
+  display: grid;
+  flex: 1;
+  gap: 1px;
+  min-width: 0;
+}
+
+.widget-row__title {
+  font-size: 13.5px;
+  font-weight: 560;
+}
+
+.widget-row__description {
+  font-size: 12px;
+  color: var(--ink-faint);
+}
+
+.widget-row__order {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.widget-row--hidden .widget-row__title {
+  color: var(--ink-faint);
+}
+
+/* Shortcut management ---------------------------------------------------- */
+.shortcut-rows {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-strong);
+}
+
+.shortcut-row__monogram {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-xs);
+  background: hsl(var(--monogram-hue, 250) 52% 42%);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 620;
+}
+
+.shortcut-row__text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 1px;
+}
+
+.shortcut-row__title {
+  font-size: 13.5px;
+  font-weight: 550;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shortcut-row__url {
+  font-size: 12px;
+  color: var(--ink-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Info blocks ------------------------------------------------------------ */
+.info-block {
+  display: grid;
+  gap: var(--space-2);
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.info-list {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.future-section {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.future-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: 10px 12px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+
+.future-item__text {
+  display: grid;
+  flex: 1;
+  gap: 1px;
+}
+
+.future-item__label {
+  font-size: 13.5px;
+  font-weight: 560;
+  color: var(--ink);
+}
+
+.future-item__hint {
+  font-size: 12.5px;
+  color: var(--ink-faint);
+}
+
+/* About ------------------------------------------------------------------ */
+.about-card {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.about-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.about-card__name {
+  display: grid;
+  gap: 1px;
+}
+
+.about-card__title {
+  font-size: 15px;
+  font-weight: 620;
+}
+
+.about-card__meta {
+  font-size: 12px;
+  color: var(--ink-faint);
+}
+
+.about-card p {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.reset-note {
+  font-size: 12.5px;
+  color: var(--ink-faint);
+}
+
+@media (max-width: 760px) {
+  .settings {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .settings__nav {
+    display: flex;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-3);
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .settings__nav-item {
+    flex: none;
+    white-space: nowrap;
+  }
+
+  .settings__nav-item .badge {
+    display: none;
+  }
+
+  .settings__content {
+    padding: var(--space-4);
+  }
+}
