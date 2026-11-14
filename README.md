@@ -13,16 +13,27 @@ offline with no account. Signing in adds optional sync through the small account
 ## What's in this phase
 
 - New-tab page with clock, date, greeting, search, shortcuts, notes and tasks.
-- Light / dark / system themes driven by one token set.
+- A widget library of 57 widgets in eight categories (essentials, productivity, time,
+  navigation, media, information, browser, personal), each lazy-loaded and isolated behind
+  an error boundary. Widgets that need a permission or a connected service say so instead of
+  pretending to work.
+- A layout editor: drag widgets by their handle, resize, pin, hide, lock the layout, apply
+  one of eight presets, save a layout and reuse it, and restore the previous arrangement.
+- Workspaces: each one keeps its own theme, layout, widgets, notes, tasks, shortcuts and
+  calendar; create, rename, duplicate, delete, plus a temporary guest workspace.
+- 14 built-in themes plus a custom theme editor, light / dark / system modes, and controls for
+  background, typography, surfaces and motion — all driven by one token set.
+- Accessibility settings: high contrast, reduced motion, large text, colour-blind-safe accents
+  and text spacing, plus remappable keyboard shortcuts.
+- A first-run onboarding wizard that picks a theme, a layout and starting widgets.
 - Reusable primitives: button, icon button, card, input, textarea, select, switch,
   segmented control, dialog, menu, badge, empty state.
-- Modular widgets: add one to `src/widgets/widgets.ts` + a component + one registry line.
-- Local storage for theme, widget visibility/order, shortcuts, notes, tasks and settings,
-  restored when the browser reopens.
-- Settings drawer with Appearance, Dashboard widgets, Shortcuts, Data & storage, Recently
-  deleted, About — plus clearly labelled "coming later" sections (AI, workspaces, advanced
-  themes) that hold no fake functionality.
-- Reset-to-defaults behind a confirmation dialog.
+- Local storage for every workspace, restored when the browser reopens, validated field by
+  field on read.
+- Settings drawer with Appearance, Themes, Layouts, Workspaces, Widgets, Accessibility,
+  Shortcuts, Onboarding, Data & storage, Recently deleted, Account and About — plus clearly
+  labelled "coming later" sections that hold no fake functionality.
+- Reset-to-defaults and layout reset behind confirmation dialogs.
 
 Also in this phase:
 
@@ -39,8 +50,8 @@ Also in this phase:
 - **Privacy controls**: export, delete synchronized data, disconnect every integration, sign
   out everywhere, delete account — each behind a confirmation.
 
-Explicitly **not** in this phase: AI, collaboration, advanced widgets, the full onboarding
-flow, and any integration that would need credentials this repository does not have.
+Explicitly **not** in this phase: AI, collaboration, calendar and weather data from a real
+provider, and any integration that would need credentials this repository does not have.
 
 ## Requirements
 
@@ -80,14 +91,27 @@ permission, `storage`.
 
 ## Storage model
 
-One versioned record (`luma.dashboard.v1`) holds the whole dashboard:
+One versioned record (`luma.dashboard.v1`) holds every workspace plus the settings that are
+shared across them:
 
 ```ts
+interface DashboardRoot {
+  version: number;
+  activeWorkspaceId: string;
+  workspaces: Workspace[]; // each with its own DashboardData + layout history
+  customThemes: CustomTheme[];
+  savedLayouts: SavedLayout[];
+  onboarding: OnboardingState;
+}
+
 interface DashboardData {
-  settings: DashboardSettings; // theme, clock format, name, search engine, widget order/visibility
+  settings: DashboardSettings; // theme, layout, background, accessibility, keyboard, widgets…
   shortcuts: Shortcut[];
   notes: Note[];
   tasks: Task[];
+  events: CalendarEvent[];
+  trash: TrashEntry[]; // soft-deleted notes, tasks and shortcuts
+  widgetState: Record<string, Record<string, unknown>>;
 }
 ```
 
@@ -100,32 +124,37 @@ surfaced to the user rather than silently dropped.
 ```
 public/manifest.json        Manifest V3 definition + icons
 src/main.tsx                Entry
-src/pages/NewTabPage.tsx    Dashboard + settings drawer + account panel + storage warning
+src/pages/NewTabPage.tsx    Dashboard + onboarding + settings drawer + account panel
 src/components/ui/          Reusable primitives (buttons, inputs, dialog, menu, …)
-src/components/dashboard/   Dashboard shell (layout from saved widget order)
+src/components/dashboard/   Dashboard shell, layout editor, workspace switcher, background
+src/components/onboarding/  First-run wizard (theme, layout, starting widgets)
 src/components/settings/    Settings drawer and its sections
 src/components/account/     Sign-in, recovery, account, devices, sync, integrations, privacy
 src/account/                Account provider, device identity, shared types
 src/services/               HTTP client + auth, sync, integration and privacy services
 src/sync/                   Sync categories (slice/apply/fingerprint) and the sync provider
-src/widgets/                Widget registry and the starter widgets
+src/widgets/catalogue.ts    Every widget's metadata (no React) — the single source of truth
+src/widgets/registry.tsx    Widget id → lazily imported component
+src/widgets/<category>/     Widget components, grouped by category
+src/widgets/presets.ts      Preset layouts
 src/storage/                Storage adapter (chrome.storage.local → localStorage) + schema
 src/state/                  Reducer, provider and actions
-src/theme/                  Theme preference → <html data-theme>
-src/lib/                    Formatting, search engines, URL validation, hooks
-src/styles/                 Tokens, base styles, components, dashboard, settings, account
+src/theme/                  Built-in themes, custom themes, <html data-theme> application
+src/lib/                    Formatting, dates, keyboard, search engines/tools, hooks
+src/styles/                 Tokens, base styles, components, dashboard, customization, settings
 server/                     Optional account service: Express, JSON store, scrypt, sessions
 ```
 
 ## Extension points
 
-- **New widget**: add an id + metadata in `src/widgets/widgets.ts`, create the component in
-  `src/widgets/`, register it in `src/widgets/index.tsx`. Saved dashboards pick it up
-  automatically because the stored order is normalised on load.
+- **New widget**: append a descriptor to `WIDGETS` in `src/widgets/catalogue.ts`, write the
+  component next to its category in `src/widgets/<category>/`, and add one line to
+  `src/widgets/registry.tsx`. Saved dashboards pick it up automatically because stored
+  layouts are normalised on load.
 - **New settings section**: add an entry to `SETTINGS_SECTIONS`; real sections get a
   component in `SettingsPanel`, future ones fall back to `ComingSoonSection`.
-- **New theme**: add tokens under a new `[data-theme='…']` block and extend
-  `ThemePreference`. Nothing else reads colours directly.
+- **New theme**: append a `BuiltInTheme` in `src/theme/themes.ts`. Tokens are applied through
+  CSS variables, so nothing else reads colours directly.
 
 ## Account service
 
@@ -145,5 +174,5 @@ server/                     Optional account service: Express, JSON store, scryp
 
 ## Roadmap (later phases)
 
-Onboarding · calendar/weather widgets · AI assist · workspaces · advanced themes · backup
-import.
+AI assist · collaboration · real calendar, weather, media and email providers (they need
+OAuth clients and API keys) · backup import.

@@ -86,6 +86,8 @@ function WidgetSlot({
       onDragLeave={() => setDragOver(false)}
       onDrop={(event) => {
         setDragOver(false);
+        // Keep the drop on this slot; the grid's append handler must not also move it.
+        event.stopPropagation();
         onDrop(event, entry);
       }}
     >
@@ -368,6 +370,7 @@ export function Dashboard({ openSettings, openAccount }: DashboardProps) {
             openSettings={() => openSettings('widgets')}
             openAccount={openAccount}
             onDragStart={startDrag}
+            onDragEnd={() => setDraggingId(null)}
             onDrop={dropOn}
           />
         ))}
